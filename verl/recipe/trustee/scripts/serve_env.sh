@@ -1,0 +1,2 @@
+HOME='path/to/your/home'
+VLLM_ALLOW_LONG_MAX_MODEL_LEN=1 CUDA_VISIBLE_DEVICES=4,5,6,7 vllm serve $HOME/model/Qwen/Qwen3-8B --port 8000 --tensor-parallel-size 4 --max-model-len 131072 --served-model-name Qwen3-8B --tool-call-parser hermes --enable-auto-tool-choice --hf-overrides '{"rope_parameters": {"rope_type":"yarn","factor":4.0,"original_max_position_embeddings":32768}}'

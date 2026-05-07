@@ -1,0 +1,112 @@
+hydra:
+  searchpath:
+    - file://verl/trainer/config
+
+defaults:
+  - ppo_trainer
+  - _self_
+
+simulator:
+  url: "http://localhost:8000/v1"
+  api_key: "dummy"
+  model: "Qwen3-8B"
+  max_tokens:
+    tool: 2048
+    user: 2048
+    verifier: 2048
+  timeout:
+    tool: 120
+    user: 120
+    verifier: 120
+  max_retries: 3
+  max_retries_verifier: 3  # Higher retry count for verifier (more complex JSON)
+  model_size: "small"  # 'small' (8B), 'medium' (14B), 'large' (32B+) - affects verifier criteria reduction
+  frequency_penalty: 0.0
+  verbose: false
+  enable_thinking: true
+  strip_thinking: false
+  # Ablation flags: when true, the corresponding field is withheld from simulator prompts
+  ablate_user_intent: false       # Remove user_intent from tool/user/verifier simulators
+  ablate_user_persona: false      # Remove user_persona from user/verifier simulators
+  ablate_expected_tool_calls: false  # Remove expected_tool_calls from verifier simulator
+
+actor_rollout_ref:
+  rollout:
+    agent:
+      agent_loop_manager_class: "recipe.trustee.agent_loop.SimulatorAgentLoopManager"
+      default_agent_loop: "simulator_agent"
+    multi_turn:
+      _target_: "recipe.trustee.workers.config.rollout.MultiTurnConfig"
+      max_tool_turns: 10
+      max_user_turns: 10
+      enable_tool_reward: true
+      enable_user_reward: true
+      format: hermes            # use "llama-3.1" for Llama-3.1 native tool format
+      require_thinking: true    # set false for models without <think>...</think> (e.g. Llama-3.1)
+
+sampling_control:
+  enable: false
+  warmup_steps: 20
+  target_entropy: 0.1
+  temperature:
+    min: 0.0
+    max: 1.0
+    delta: 0.01
+
+algorithm:
+  gamma: 0.99
+  adv_kwargs:
+    mode: "uniform"    # "relu", "advantage", "linear", "uniform"
+
+data:
+  query_key: "query"
+  tools_key: "tools"
+  filter_overlong_prompts_workers: 32
+  custom_cls:
+    path: "pkg://recipe.trustee.utils.dataset.agent_dataset"
+    name: "AgentDataset"
+  curriculum:
+    enable: true
+    # LLM settings for query generation (uses simulator config)
+    api_base: ${simulator.url}
+    api_key: ${simulator.api_key}
+    model: ${simulator.model}
+    max_retries: 2
+    timeout: 60
+    max_tokens: 8192
+    concurrency: 32
+    difficulty:
+      level_initial: 1
+      level_max: 100
+      step: 3
+      # Multipliers: derived = floor(mult * level); num_criteria = 1 + floor(mult * level). Single source of truth in curriculum.
+      multipliers:
+        num_tools: 0.10
+        expected_tool_calls: 0.03
+        user_persona: 0.02
+        query_ambiguity: 0.02
+        expected_turns: 0.02
+        num_criteria: 0.04
+        system_prompt: 0.03
+        max_user_turns: 0.03
+        max_assistant_turns: 0.06
+        max_tool_turns: 0.03
+      min_turns: 1
+      fixed_aspects: []   # e.g., ["num_tools"] pins num_tools at its level-max value
+    max_attempts: 5
+    update_frequency: 1
+    # Soft curriculum: with probability epsilon, randomize num_tools, num_expected_calls, user_persona_level, query_ambiguity_level, expected_turns_level
+    epsilon: 0.5
+    # Curriculum update: increase level when final_reward >= upper, decrease when <= lower
+    reward_threshold_upper: 0.5
+    reward_threshold_lower: 0.0
+
+reward_model:
+  use_reward_loop: false
+  reward_kwargs:
+    gamma: 0.99
+    mode: "sparse"
+
+custom_reward_function:
+  path: "pkg://recipe.trustee.utils.reward_score.agent"
+  name: "compute_agent_score"
