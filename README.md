@@ -1,6 +1,10 @@
 # TRUSTEE: Tool Learning Using Simulated Environments
 
-The source code of the paper **Democratizing Tool Learning with Environments Fully Simulated by a Free 8B Language Model**.
+[![arXiv](https://img.shields.io/badge/arXiv-2604.17739-b31b1b.svg?logo=arxiv)](https://arxiv.org/abs/2604.17739)
+[![Hugging Face Collection](https://img.shields.io/badge/TRUSTEE_Collection-3B4252?style=flat&logo=huggingface)](https://huggingface.co/collections/JamyDohrn/trustee)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg?logo=apache)](LICENSE)
+
+The source code of our NeurIPS 2026 paper **Democratizing Tool Learning with Environments Fully Simulated by a Free 8B Language Model**.
 
 We base our code on `verl` and implement TRUSTEE as a recipe extension (`verl/recipe/trustee`).
 
