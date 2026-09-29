@@ -61,3 +61,17 @@ bash recipe/trustee/scripts/bfcl.sh
 
 ## Acknowledgements
 The codebase has referred to [verl](https://github.com/volcengine/verl) and we thank the team for their valuable contributions to the community.
+
+## Citation
+If you find our work useful, feel free to cite our paper:
+```bib
+@misc{tang2026democratizingtoollearningenvironments,
+      title={Democratizing Tool Learning with Environments Fully Simulated by a Free 8B Language Model}, 
+      author={Chenming Tang and Hsiu-Yuan Huang and Weijie Liu and Junqiang Zheng and Saiyong Yang and Yunfang Wu},
+      year={2026},
+      eprint={2604.17739},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG},
+      url={https://arxiv.org/abs/2604.17739}, 
+}
+```
